@@ -1,6 +1,6 @@
-# 🚀 Ajayify - Node.js REST API Boilerplate
+# 🚀 Ajay - Node.js REST API Machine Test
 
-A scalable and production-ready Node.js REST API boilerplate using **Express, MySQL, and Sequelize ORM**.
+A scalable and production-ready Node.js REST API boilerplate using **Express, MongoDB, and Mongoose ORM**.
 
 ---
 
@@ -8,10 +8,9 @@ A scalable and production-ready Node.js REST API boilerplate using **Express, My
 
 * 🔐 Authentication using JWT
 * 🔑 Password hashing with bcrypt
-* 📦 Sequelize ORM (MySQL)
+* 📦 Mongoose ORM (MongoDB)
 * 📁 MVC Folder Structure
 * 🛡️ Validation using validatorjs
-* 📤 File upload with multer
 * 🌐 CORS enabled
 * ⚙️ Environment-based config (.env)
 
@@ -21,18 +20,11 @@ A scalable and production-ready Node.js REST API boilerplate using **Express, My
 
 * Node.js
 * Express.js
-* MySQL
-* Sequelize ORM
+* Mongodb
+* Mongoose ORM
 
 ---
 
-## 📥 Installation
-
-```bash
-npm install ajayify
-```
-
----
 
 ## 🚀 Usage
 
@@ -82,7 +74,7 @@ npm run dev
 
 * CRUD APIs
 * User authentication
-* File uploads
+* User Multi tenanat feature
 * Validation middleware
 
 ---
@@ -90,11 +82,9 @@ npm run dev
 ## 📌 Dependencies
 
 * express
-* sequelize
-* mysql2
+* mongodb
 * jsonwebtoken
 * bcrypt
-* multer
 * dotenv
 * cors
 * validatorjs

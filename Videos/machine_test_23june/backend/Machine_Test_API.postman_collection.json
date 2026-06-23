@@ -1,0 +1,742 @@
+{
+	"info": {
+		"_postman_id": "machine-test-23june-collection",
+		"name": "Machine Test - Multi Tenant API",
+		"description": "Complete API collection for Multi-Tenant Backend Machine Test\n\n**Base URL:** http://localhost:6000\n\n**Flow:**\n1. SuperAdmin Login → get superadmin_token\n2. Create Master (using superadmin_token)\n3. Master Login → get master_token\n4. Create Tenant User (using master_token)\n5. Tenant User Login → get tenant_token\n6. CRUD on Data (using tenant_token)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:6000",
+			"type": "string"
+		},
+		{
+			"key": "superadmin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "master_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "tenant_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "data_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "🔴 SuperAdmin",
+			"description": "SuperAdmin APIs - Top level admin who creates Master users",
+			"item": [
+				{
+					"name": "SuperAdmin Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.collectionVariables.set('superadmin_token', jsonData.token);",
+									"    console.log('SuperAdmin token saved!');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"superadmin@admin.com\",\n    \"password\": \"admin123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/superadmin/login",
+							"host": ["{{base_url}}"],
+							"path": ["superadmin", "login"]
+						},
+						"description": "Login as SuperAdmin.\n\nDefault credentials:\n- email: superadmin@admin.com\n- password: admin123\n\nToken is auto-saved to `superadmin_token` variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Master",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{superadmin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Master User One\",\n    \"email\": \"master1@example.com\",\n    \"password\": \"Master@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/superadmin/master",
+							"host": ["{{base_url}}"],
+							"path": ["superadmin", "master"]
+						},
+						"description": "Create a new Master user. Requires SuperAdmin token.\nA unique tenantDb is automatically assigned to the master."
+					},
+					"response": []
+				},
+				{
+					"name": "List All Masters",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{superadmin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/superadmin/masters?limit=10&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["superadmin", "masters"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Number of records to return"
+								},
+								{
+									"key": "offset",
+									"value": "0",
+									"description": "Number of records to skip"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search by name",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "active",
+									"description": "Filter by status",
+									"disabled": true
+								},
+								{
+									"key": "orderBy",
+									"value": "createdAt",
+									"description": "Field to sort by",
+									"disabled": true
+								},
+								{
+									"key": "orderType",
+									"value": "DESC",
+									"description": "ASC or DESC",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get list of all Master users. Requires SuperAdmin token."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🟠 Master",
+			"description": "Master APIs - Master user who manages tenant users",
+			"item": [
+				{
+					"name": "Master Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.collectionVariables.set('master_token', jsonData.token);",
+									"    console.log('Master token saved!');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"master1@example.com\",\n    \"password\": \"Master@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/master/login",
+							"host": ["{{base_url}}"],
+							"path": ["master", "login"]
+						},
+						"description": "Login as Master user.\nToken is auto-saved to `master_token` variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Tenant User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{master_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Tenant User One\",\n    \"email\": \"tenantuser1@example.com\",\n    \"password\": \"Tenant@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/master/user",
+							"host": ["{{base_url}}"],
+							"path": ["master", "user"]
+						},
+						"description": "Create a Tenant User under the logged-in Master's tenant DB. Requires Master token."
+					},
+					"response": []
+				},
+				{
+					"name": "List Tenant Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{master_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/master/users?limit=10&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["master", "users"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search by name",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "active",
+									"disabled": true
+								},
+								{
+									"key": "orderBy",
+									"value": "createdAt",
+									"disabled": true
+								},
+								{
+									"key": "orderType",
+									"value": "DESC",
+									"disabled": true
+								}
+							]
+						},
+						"description": "List all tenant users under this Master's tenant DB. Requires Master token."
+					},
+					"response": []
+				},
+				{
+					"name": "Tenant User Login (via Master route)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.collectionVariables.set('tenant_token', jsonData.token);",
+									"    console.log('Tenant User token saved!');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"tenantuser1@example.com\",\n    \"password\": \"Tenant@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/master/user/login",
+							"host": ["{{base_url}}"],
+							"path": ["master", "user", "login"]
+						},
+						"description": "Tenant User login endpoint.\nToken is auto-saved to `tenant_token` variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Tenant User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{tenant_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/master/user/profile",
+							"host": ["{{base_url}}"],
+							"path": ["master", "user", "profile"]
+						},
+						"description": "Get profile of the logged-in tenant user. Requires Tenant User token."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🟡 Auth (Regular Users)",
+			"description": "Public User APIs - Regular user registration and authentication",
+			"item": [
+				{
+					"name": "User Signup",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"John@123\",\n    \"role\": \"user\",\n    \"profile\": \"public\",\n    \"address\": \"{\\\"street\\\": \\\"123 Main St\\\", \\\"city\\\": \\\"Mumbai\\\", \\\"state\\\": \\\"Maharashtra\\\"}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/signup",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "signup"]
+						},
+						"description": "Register a new regular user.\n\nFields:\n- name (required)\n- email (required)\n- password (required)\n- role: 'user' (default)\n- profile: 'public' or 'private'\n- address: JSON string with address object"
+					},
+					"response": []
+				},
+				{
+					"name": "User Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.collectionVariables.set('user_token', jsonData.token);",
+									"    console.log('User token saved!');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"John@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Login as regular user.\nToken is auto-saved to `user_token` variable."
+					},
+					"response": []
+				},
+				{
+					"name": "User Details (by ID)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/auth/details/{{user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "details", "{{user_id}}"]
+						},
+						"description": "Get user details by user ID. Public route - no auth required.\n\nSet `user_id` variable with the MongoDB _id of the user."
+					},
+					"response": []
+				},
+				{
+					"name": "List All Users (Protected)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{user_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/list?limit=10&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "list"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search by name",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "active",
+									"disabled": true
+								},
+								{
+									"key": "orderBy",
+									"value": "createdAt",
+									"disabled": true
+								},
+								{
+									"key": "orderType",
+									"value": "DESC",
+									"disabled": true
+								}
+							]
+						},
+						"description": "List all users. Requires user token. Non-admin users won't see themselves in the list."
+					},
+					"response": []
+				},
+				{
+					"name": "Update User (Protected)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{user_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe Updated\",\n    \"profile\": \"private\",\n    \"address\": {\n        \"street\": \"456 New Street\",\n        \"city\": \"Delhi\",\n        \"state\": \"Delhi\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/update/{{user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "update", "{{user_id}}"]
+						},
+						"description": "Update a user. Users can only update themselves. Admins can update anyone.\n\nSet `user_id` variable with the user's MongoDB _id."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User (Protected)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{user_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/delete/{{user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "delete", "{{user_id}}"]
+						},
+						"description": "Delete a user. Users can only delete themselves. Admins can delete anyone.\n\nSet `user_id` variable with the user's MongoDB _id."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🟢 Data (Tenant)",
+			"description": "Tenant Data CRUD APIs - All require Tenant User token",
+			"item": [
+				{
+					"name": "Create Data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data._id) {",
+									"    pm.collectionVariables.set('data_id', jsonData.data._id);",
+									"    console.log('Data ID saved:', jsonData.data._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{tenant_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Sample Data Title\",\n    \"description\": \"This is a sample description for the data entry.\",\n    \"status\": \"active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/data",
+							"host": ["{{base_url}}"],
+							"path": ["data"]
+						},
+						"description": "Create a new data entry in the tenant's database.\nRequires Tenant User token.\n\nData ID is auto-saved to `data_id` variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Data",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{tenant_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/data?limit=10&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["data"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search by title",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "active",
+									"description": "Filter by status: active / inactive",
+									"disabled": true
+								},
+								{
+									"key": "orderBy",
+									"value": "createdAt",
+									"disabled": true
+								},
+								{
+									"key": "orderType",
+									"value": "DESC",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all data entries for this tenant. Soft-deleted records are excluded.\nRequires Tenant User token."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Data By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{tenant_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/data/{{data_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["data", "{{data_id}}"]
+						},
+						"description": "Get a single data entry by its ID.\nRequires Tenant User token.\n\nSet `data_id` variable or it auto-populates after Create Data."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Data",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{tenant_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Updated Data Title\",\n    \"description\": \"Updated description content here.\",\n    \"status\": \"inactive\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/data/{{data_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["data", "{{data_id}}"]
+						},
+						"description": "Update an existing data entry by ID.\nRequires Tenant User token."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Data (Soft Delete)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{tenant_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/data/{{data_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["data", "{{data_id}}"]
+						},
+						"description": "Soft delete a data entry (sets deletedAt timestamp).\nRequires Tenant User token.\nDeleted records won't appear in GET /data list."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
